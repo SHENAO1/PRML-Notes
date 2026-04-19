@@ -9,36 +9,189 @@
 \label{chap:w01l04-local-minima-and-saddle-points}
 
 \begin{warningbox}
-第四节课的原始 Markdown 文件名中存在重复标题；TeX 工程侧已经改用稳定 slug，
-后续迁移正文时无需继承这个命名问题。
+训练停滞并不自动等于“卡在 local minima”。在高维神经网络里，更常见的麻烦往往是 saddle point 或一大片很平的区域。
 \end{warningbox}
 
-\section{临界点分析骨架}
-\label{sec:w01l04-critical-points}
+\section{为什么 Optimization 会失败}
+\label{sec:w01l04-why-fail}
 
-\begin{theorem}{Hessian 判别思路}{w01l04-hessian}
-如果某个临界点处的 Hessian 矩阵特征值有正有负，那么该点是鞍点而不是局部最小值。
-\end{theorem}
+训练神经网络时，经常会遇到 loss 不再下降的情况。
+一个自然的猜想是：参数走到了梯度为零的地方，导致 gradient descent 无法继续更新。
 
+\begin{definition}{Critical Point}{w01l04-critical-point}
+梯度为零的点统称为 critical point，它包含 local minima、local maxima 和 saddle point。
+\end{definition}
+
+因此，当训练停住时，比较准确的说法是模型可能卡在某个 critical point，
+而不是武断地说它一定卡在 local minima。
+
+\subsection{先分清三个概念}
+\label{sec:w01l04-three-points}
+
+这三个名词的关系可以先整理为：
+\begin{itemize}
+  \item \textbf{Critical point}：只要求梯度为零，是一个总称。
+  \item \textbf{Local minima}：不仅梯度为零，而且附近所有小幅移动都会让 loss 变大。
+  \item \textbf{Saddle point}：梯度也为零，但某些方向会让 loss 变大，另一些方向却会让 loss 变小。
+\end{itemize}
+
+所以，“训练停在 critical point” 只是起点判断；接下来还要继续问：这个 critical point 到底是局部极小值，还是鞍点？
+
+\section{用 Taylor 展开理解临界点}
+\label{sec:w01l04-taylor}
+
+为了判断某个 critical point 周围的地形，可以在参数 $\theta'$ 附近对 loss 做二阶近似：
 \begin{equation}
-  L\paren{\theta} \approx L\paren{\theta'}
-  + \frac{1}{2}(\theta - \theta')\trans
-  H
-  (\theta - \theta').
+  L\paren{\theta}
+  \approx
+  L\paren{\theta'}
+  +
+  \paren{\theta-\theta'}\trans g
+  +
+  \frac{1}{2}\paren{\theta-\theta'}\trans H \paren{\theta-\theta'}.
   \label{eq:w01l04-taylor}
 \end{equation}
 
-\begin{lstlisting}[style=text,caption={课堂整理占位模板},label={lst:w01l04-outline}]
-1. 先写问题背景
-2. 再写 Taylor 展开与 Hessian 定义
-3. 最后补 Local minima 与 Saddle point 的对比图
-\end{lstlisting}
+这里三项分别承担不同角色：
+\begin{itemize}
+  \item $L(\theta')$ 是展开点本身的 loss，高度基准由它给出；
+  \item $g=\grad L\paren{\theta'}$ 是一阶导数向量，描述在当前点附近往哪个方向走会先上升或下降；
+  \item $H=\hess L\paren{\theta'}$ 是 Hessian 矩阵，描述曲面的弯曲方式，也就是局部曲率。
+\end{itemize}
 
-\begin{figure}[htbp]
-  \centering
-  \includegraphics[width=0.72\linewidth]{contents/week01/lesson04-local-minima-and-saddle-points/figures/lesson-figure.jpg}
-  \caption{临界点章节图片占位}
-  \label{fig:w01l04-placeholder}
-\end{figure}
+如果 $\theta'$ 是 critical point，那么 $g=0$，于是只剩二阶项主导局部形状：
+\begin{equation}
+  L\paren{\theta}
+  \approx
+  L\paren{\theta'}
+  +
+  \frac{1}{2}\paren{\theta-\theta'}\trans H \paren{\theta-\theta'}.
+  \label{eq:w01l04-critical-taylor}
+\end{equation}
+
+这一步非常关键：一旦一阶项消失，局部地形就主要由 Hessian 决定。
+因此我们不需要知道整个巨大 error surface 长什么样，只需要看当前点附近的曲率结构，就足以判断它更像山谷还是马鞍。
+
+\begin{theorem}{Hessian 判别思路}{w01l04-hessian}
+设 $\theta'$ 是一个 critical point。若 $H$ 的特征值全为正，则 $\theta'$ 附近各方向的 loss 都会上升，因此它是局部极小值；若 $H$ 的特征值有正有负，则附近同时存在上升和下降方向，因此它是鞍点。
+\end{theorem}
+
+\begin{examplebox}
+一个最直接的二维例子是
+\[
+  H = \begin{bmatrix}
+    2 & 0 \\
+    0 & -1
+  \end{bmatrix}.
+\]
+若取方向 $v_1=\begin{bmatrix}1\\0\end{bmatrix}$，则 $v_1\trans H v_1 = 2 > 0$，表示往这个方向走会让 loss 上升；
+若取方向 $v_2=\begin{bmatrix}0\\1\end{bmatrix}$，则 $v_2\trans H v_2 = -1 < 0$，表示往另一个方向走会让 loss 下降。
+同一个点同时存在“上坡方向”和“下坡方向”，这就是鞍点最典型的二维特征。
+\end{examplebox}
+
+\section{一个极简例子：两层线性网络}
+\label{sec:w01l04-simple-network}
+
+课程用一个非常简单的模型说明 saddle point 如何出现。设
+\begin{equation}
+  y = w_1 w_2 x,
+  \label{eq:w01l04-model}
+\end{equation}
+训练资料只有一笔：当 $x=1$ 时，希望输出 $y=1$。于是损失函数为
+\begin{equation}
+  L = \paren{1-w_1w_2}^2.
+  \label{eq:w01l04-loss}
+\end{equation}
+
+从 \cref{eq:w01l04-model} 到 \cref{eq:w01l04-loss} 的过渡其实很直接：因为训练资料里 $x=1$，
+所以模型预测值就是 $\hat{y}=w_1w_2$；目标值是 $y=1$，若采用平方误差，loss 自然就变成 $\paren{1-w_1w_2}^2$。
+这个例子虽然极简，但已经足以看出多参数模型的 error surface 会比单参数情况复杂得多。
+
+对参数求一阶导数，得到
+\begin{align}
+  \frac{\partial L}{\partial w_1} &= 2\paren{1-w_1w_2}\paren{-w_2}, \label{eq:w01l04-grad-w1} \\
+  \frac{\partial L}{\partial w_2} &= 2\paren{1-w_1w_2}\paren{-w_1}. \label{eq:w01l04-grad-w2}
+\end{align}
+
+这一步可以用 chain rule 理解：先对外层平方求导，得到前面的系数 $2\paren{1-w_1w_2}$；
+再对内层 $1-w_1w_2$ 分别对 $w_1,w_2$ 求导，就得到后面的 $-w_2$ 与 $-w_1$。
+
+在原点 $\paren{w_1,w_2}=\paren{0,0}$ 处，\cref{eq:w01l04-grad-w1,eq:w01l04-grad-w2} 都等于零，
+所以原点是一个 critical point。
+
+\subsection{从梯度走到 Hessian}
+\label{sec:w01l04-gradient-to-hessian}
+
+继续对一阶导数求导，可以得到 Hessian 的各个元素：
+\begin{align*}
+  \frac{\partial^2 L}{\partial w_1^2} &= 2w_2^2, \\
+  \frac{\partial^2 L}{\partial w_2^2} &= 2w_1^2, \\
+  \frac{\partial^2 L}{\partial w_1 \partial w_2}
+  = \frac{\partial^2 L}{\partial w_2 \partial w_1}
+  &= -2 + 4w_1w_2.
+\end{align*}
+
+因此在原点附近，Hessian 可写为
+\begin{equation}
+  H =
+  \begin{bmatrix}
+    0 & -2 \\
+    -2 & 0
+  \end{bmatrix}.
+  \label{eq:w01l04-hessian}
+\end{equation}
+
+这个矩阵的特征值是 $2$ 和 $-2$，有正有负，因此原点不是 local minima，而是 saddle point。
+
+\section{如何逃离 Saddle Point}
+\label{sec:w01l04-escape}
+
+如果 $u$ 是 Hessian 的某个特征向量，$\lambda$ 是对应特征值，那么
+\begin{equation}
+  Hu = \lambda u.
+  \label{eq:w01l04-eig}
+\end{equation}
+
+若从当前点沿着这个方向走一个小步长 $\alpha$，则二阶项会变成
+\begin{equation}
+  (\alpha u)\trans H (\alpha u)
+  = \alpha^2 u\trans H u
+  = \alpha^2 \lambda \norm{u}^2.
+  \label{eq:w01l04-eig-direction}
+\end{equation}
+
+如果 $\lambda<0$，那么 \cref{eq:w01l04-eig-direction} 为负，表示沿着这个方向前进可以让 loss 下降。
+这说明 saddle point 并不是“完全无路可走”的地方，它只是需要找到合适的下降方向。
+
+\begin{examplebox}
+假设某个方向的特征值是 $\lambda=-2$，并且我们只走一个很小的步长 $\alpha=0.1$，那么二阶项近似会贡献
+\[
+  \alpha^2 \lambda \norm{u}^2 = 0.01 \times (-2)\norm{u}^2 < 0.
+\]
+这说明只要方向选对，即便只走很短的一步，loss 也会开始往下降。负特征值提供的，正是这种“还能继续下坡”的证据。
+\end{examplebox}
+
+\begin{warningbox}
+理论上可以用 Hessian 的负特征值方向来逃离鞍点，但在大型神经网络中直接计算二阶导数与特征值通常太昂贵，因此实践里很少这样硬算。
+\end{warningbox}
+
+\section{为什么 Saddle Point 更常见}
+\label{sec:w01l04-why-saddle}
+
+课程最后给出一个高维几何视角：维度越高，看似“走不出去”的点越可能只是某些方向被堵住，而其他方向仍然存在下降通道。
+这也是为什么在百万维参数空间里，真正的 local minima 反而比较少见。
+
+\begin{fact}{高维经验现象}{w01l04-high-dimensional}
+在高维神经网络的训练中，停滞点往往对应既有正特征值又有负特征值的 Hessian，因此更接近 saddle point，而不是纯粹的 local minima。
+\end{fact}
+
+\begin{summarybox}
+本节的核心判断链条是：
+\begin{enumerate}
+  \item 训练停滞时，先把问题表述为“可能卡在 critical point”；
+  \item 再用 Hessian 的特征值结构区分 local minima 与 saddle point；
+  \item 在高维空间里，saddle point 往往比真正的 local minima 更常见。
+\end{enumerate}
+\end{summarybox}
 
 \end{document}

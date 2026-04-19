@@ -9,33 +9,128 @@
 \label{chap:w01l03-model-loss-optimization}
 
 \begin{examplebox}
-这一课适合按“训练集与测试集、偏差与优化问题、过拟合与泛化”几个模块组织。
-每个模块都可以独立成节，并补上你自己的课堂理解。
+这节课更像一份做作业与做实验的诊断手册：先看训练误差，再看测试误差，然后分别判断是 model bias、optimization issue、overfitting，还是数据分布 mismatch。
 \end{examplebox}
 
-\section{训练流程骨架}
-\label{sec:w01l03-training-pipeline}
+\section{机器学习任务的基本框架}
+\label{sec:w01l03-basic-framework}
+
+在后续作业和 Kaggle 型任务里，通常都会拿到两部分资料：
+\begin{itemize}
+  \item \textbf{Training data}：包含输入特征 $X$ 与真实标签 $Y$。
+  \item \textbf{Testing data}：只有输入特征 $X$，需要模型输出预测结果。
+\end{itemize}
+
+无论任务是语音辨识、影像辨识、语者辨识还是机器翻译，训练流程大都可以抽象成三步：
+\begin{enumerate}
+  \item 写出带未知参数的函数 $f_\theta(x)$；
+  \item 定义损失函数 $L(\theta)$；
+  \item 解决优化问题，找出最佳参数 $\theta^\star$。
+\end{enumerate}
 
 \begin{fact}{三步训练流程}{w01l03-three-steps}
 大多数监督学习任务都可以抽象为模型设计、损失定义与优化求解三步。
 \end{fact}
 
-统一的优化问题可以写为
+统一的目标写成
 \begin{equation}
   \theta^\star = \argmin_{\theta} L\paren{\theta}.
   \label{eq:w01l03-optimization}
 \end{equation}
 
-\begin{lstlisting}[style=bash,caption={命令行编译示例},label={lst:w01l03-build}]
-latexmk -xelatex -outdir=build/book main.tex
-latexmk -xelatex -outdir=build/lesson03 contents/week01/lesson03-model-loss-optimization/lesson.tex
-\end{lstlisting}
+这条式子把前两课的具体例子统一了起来：在线性模型里，$\theta$ 可能只是 $\paren{w,b}$；
+在单隐层神经网络里，$\theta$ 则会包含矩阵 $W$、偏置向量 $b$、输出层权重 $c$ 等所有参数。
+模型写法可以不同，但“找出让 loss 最小的参数”这个训练目标始终不变。
 
-\begin{figure}[htbp]
-  \centering
-  \includegraphics[width=0.72\linewidth]{contents/week01/lesson03-model-loss-optimization/figures/lesson-figure.jpg}
-  \caption{模型与优化章节图片占位}
-  \label{fig:w01l03-placeholder}
-\end{figure}
+\section{训练误差过大：Model Bias 与 Optimization Issue}
+\label{sec:w01l03-training-loss}
+
+当 Kaggle 分数不好看时，课程强调第一步不是盯着 leaderboard，
+而是先回头检查训练集上的 loss。
+
+\subsection{Model Bias}
+\label{sec:w01l03-model-bias}
+
+如果模型太简单，能表示的函数集合太小，那么即使找到这个集合里最好的函数，
+loss 仍然可能很大。这时问题不是没有努力优化，而是“针根本不在海里”。
+
+常见解法包括：
+\begin{itemize}
+  \item 增加输入特征；
+  \item 增加神经元数量或层数；
+  \item 直接换成更有弹性的模型家族。
+\end{itemize}
+
+\subsection{Optimization Issue}
+\label{sec:w01l03-optimization-issue}
+
+另一种情况是，模型本身其实够强，但优化算法没有把好参数找出来。
+课程里给的判断方法很实用：如果一个更深、更大的模型在训练集上的 loss
+反而比浅层模型更高，那么这几乎不可能是 model bias，更可能是 optimization issue。
+
+\begin{warningbox}
+深层模型的表达能力比浅层模型更强。如果训练 loss 反而更差，问题通常出在优化过程，而不是模型不够大。
+\end{warningbox}
+
+\section{测试误差过大：Overfitting}
+\label{sec:w01l03-overfitting}
+
+如果训练 loss 已经很低，但测试 loss 仍然很大，就要开始怀疑过拟合。
+
+\begin{definition}{Overfitting}{w01l03-overfitting}
+模型在训练资料上拟合得很好，却无法推广到未见过的资料，这种现象称为过拟合。
+\end{definition}
+
+课程中给出了几类常见对策：
+\begin{enumerate}
+  \item \textbf{增加训练资料}：这是最有效的方法。
+  \item \textbf{Data augmentation}：在不破坏任务语义的前提下，对资料进行合理扩增。
+  \item \textbf{限制模型复杂度}：例如减少层数、减少参数、减少特征。
+  \item \textbf{使用额外正则手段}：例如 early stopping、regularization、dropout。
+\end{enumerate}
+
+\begin{examplebox}
+对影像资料做左右翻转通常合理，但上下颠倒往往会破坏真实语义。数据扩增不是随便造数据，而是要遵守任务本身的结构。
+\end{examplebox}
+
+\subsection{Bias-Complexity Trade-off}
+\label{sec:w01l03-bias-complexity}
+
+随着模型越来越复杂，训练 loss 通常持续下降；
+测试 loss 则往往先下降，之后在某个点开始上升。
+更数学一点地说，模型复杂度提高后，可表示的函数集合会变大，所以训练集上的最优 loss 往往不会变差；
+但测试集面对的是未知资料，当模型开始把训练数据里的偶然噪声也记住时，测试 loss 就会反弹。
+这就是课程里强调的 bias-complexity trade-off：模型不能太简单，也不能无限复杂。
+
+\section{模型选择与交叉验证}
+\label{sec:w01l03-model-selection}
+
+课程特别提醒：不要直接根据 Kaggle public leaderboard 选模型。
+如果反复根据 public 分数调模型，就等于在对 public set 过拟合。
+
+更稳妥的做法是从训练资料里切出 validation set：
+\begin{itemize}
+  \item 用 training set 训练模型；
+  \item 用 validation set 比较多个候选模型；
+  \item 选出最佳模型后，再用全部训练资料重训一次。
+\end{itemize}
+
+如果担心一次切分不稳定，还可以用 $N$-fold cross validation：
+\begin{enumerate}
+  \item 把资料切成 $N$ 份；
+  \item 每次拿其中 1 份做 validation，其余做 training；
+  \item 轮流跑完 $N$ 次；
+  \item 比较各模型在 $N$ 次验证上的平均表现。
+\end{enumerate}
+
+\section{Mismatch：训练分布与测试分布不同}
+\label{sec:w01l03-mismatch}
+
+\begin{definition}{Mismatch}{w01l03-mismatch}
+如果 training data 和 testing data 来自不同的数据分布，那么即使模型在训练集上表现良好，也可能在测试时全面失效。这种现象称为 mismatch。
+\end{definition}
+
+Mismatch 和一般过拟合不同。它的关键不是模型太复杂，而是训练资料和测试资料本来就不是同一种情境。
+例如用疫情期间的流量模式去预测疫情后的年份，就很可能发生明显的分布偏移。
 
 \end{document}
