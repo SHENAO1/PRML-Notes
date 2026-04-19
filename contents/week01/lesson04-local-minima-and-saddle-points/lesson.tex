@@ -1,0 +1,44 @@
+% Source MD: E:\wanru\PRML_Course\NoteMD\Week1\第4节课 模型优化中的局部最小与鞍点问题第4节课 模型优化中的局部最小与鞍点问题.md
+\documentclass[main.tex]{subfiles}
+
+\graphicspath{{\subfix{figures/}}}
+
+\begin{document}
+
+\chapter{模型优化中的局部最小与鞍点问题}
+\label{chap:w01l04-local-minima-and-saddle-points}
+
+\begin{warningbox}
+第四节课的原始 Markdown 文件名中存在重复标题；TeX 工程侧已经改用稳定 slug，
+后续迁移正文时无需继承这个命名问题。
+\end{warningbox}
+
+\section{临界点分析骨架}
+\label{sec:w01l04-critical-points}
+
+\begin{theorem}{Hessian 判别思路}{w01l04-hessian}
+如果某个临界点处的 Hessian 矩阵特征值有正有负，那么该点是鞍点而不是局部最小值。
+\end{theorem}
+
+\begin{equation}
+  L\paren{\theta} \approx L\paren{\theta'}
+  + \frac{1}{2}(\theta - \theta')\trans
+  H
+  (\theta - \theta').
+  \label{eq:w01l04-taylor}
+\end{equation}
+
+\begin{lstlisting}[style=text,caption={课堂整理占位模板},label={lst:w01l04-outline}]
+1. 先写问题背景
+2. 再写 Taylor 展开与 Hessian 定义
+3. 最后补 Local minima 与 Saddle point 的对比图
+\end{lstlisting}
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.72\linewidth]{contents/week01/lesson04-local-minima-and-saddle-points/figures/lesson-figure.jpg}
+  \caption{临界点章节图片占位}
+  \label{fig:w01l04-placeholder}
+\end{figure}
+
+\end{document}

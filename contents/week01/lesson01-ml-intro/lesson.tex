@@ -1,0 +1,79 @@
+% Source MD: E:\wanru\PRML_Course\NoteMD\Week1\第1节课 机器学习基本概念.md
+\documentclass[main.tex]{subfiles}
+
+\graphicspath{{\subfix{figures/}}}
+
+\begin{document}
+
+\chapter{机器学习基本概念}
+\label{chap:w01l01-ml-intro}
+
+\begin{keypointbox}
+本节课文件已经具备单课编译能力，可直接作为 Markdown 向 TeX 迁移的落点。
+建议后续按“概念定义、公式推导、图片、实验记录”的顺序增量补充。
+\end{keypointbox}
+
+\begin{definitionbox}[title={迁移说明}]
+原始 Markdown 中的段落、列表、公式和图片，后续都可以直接整理进当前章节。
+如果某段内容还没处理完，可以先留在对应小节下，逐步替换占位文本。
+\end{definitionbox}
+
+\section{模板能力演示}
+\label{sec:w01l01-template-demo}
+
+本节用一组最小示例演示公共环境。比如，\cref{def:w01l01-machine-learning}
+给出定义，\cref{eq:w01l01-empirical-risk} 给出公式，
+\cref{clm:w01l01-optimization} 给出断言，
+\cref{alg:w01l01-gradient-descent} 和 \cref{lst:w01l01-training-loop}
+分别展示伪代码与代码块，\cref{fig:w01l01-placeholder} 用于验证图片路径。
+
+\begin{definition}{机器学习}{w01l01-machine-learning}
+机器学习研究的是如何利用数据来学习一个参数化函数，使其在给定输入时输出合理预测。
+\end{definition}
+
+一个典型的经验风险最小化目标可以写成
+\begin{equation}
+  \theta^\star = \argmin_{\theta \in \R^d}
+  \frac{1}{N}\sum_{i=1}^{N}\ell\paren{f_{\theta}(x_i), y_i}.
+  \label{eq:w01l01-empirical-risk}
+\end{equation}
+
+\begin{claim}{训练目标}{w01l01-optimization}
+只要模型、损失函数和优化器都明确，后续课程的大部分整理都可以复用同一套写作骨架。
+\end{claim}
+
+\begin{algorithm}[htbp]
+  \caption{梯度下降骨架}
+  \label{alg:w01l01-gradient-descent}
+  \KwInput{训练数据 $\mathcal{D}$，学习率 $\eta$，初始参数 $\theta^{(0)}$}
+  \KwOutput{训练后的参数 $\theta^\star$}
+  \For{$t \leftarrow 0$ \KwTo $T-1$}{
+    计算梯度 $g^{(t)} \leftarrow \grad_{\theta} L\paren{\theta^{(t)}}$\;
+    更新参数 $\theta^{(t+1)} \leftarrow \theta^{(t)} - \eta g^{(t)}$\;
+  }
+  \KwRet{$\theta^{(T)}$}
+\end{algorithm}
+
+\begin{lstlisting}[style=python,caption={训练循环代码占位},label={lst:w01l01-training-loop}]
+def train_one_epoch(model, dataloader, optimizer):
+    model.train()
+    for batch in dataloader:
+        loss = model.compute_loss(batch)
+        optimizer.zero_grad()
+        loss.backward()
+        optimizer.step()
+\end{lstlisting}
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.72\linewidth]{contents/week01/lesson01-ml-intro/figures/lesson-figure.jpg}
+  \caption{图片占位：用于验证整本与单课编译时的相对路径}
+  \label{fig:w01l01-placeholder}
+\end{figure}
+
+\begin{summarybox}
+当前文件已经覆盖了课内常见的核心元素：定义、公式、断言、伪代码、代码块和图片。
+后续迁移时只需要替换内容，不需要重新设计结构。
+\end{summarybox}
+
+\end{document}

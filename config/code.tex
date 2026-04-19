@@ -1,0 +1,63 @@
+\RestyleAlgo{ruled}
+\DontPrintSemicolon
+\SetAlgoCaptionSeparator{.}
+\SetKwInput{KwInput}{输入}
+\SetKwInput{KwOutput}{输出}
+\SetKwInput{KwData}{数据}
+\SetKwInput{KwResult}{结果}
+\SetKw{KwRet}{返回}
+\SetAlFnt{\small}
+\SetAlCapFnt{\small\bfseries}
+\SetAlCapNameFnt{\small\bfseries}
+
+\definecolor{codebg}{RGB}{248, 250, 252}
+\definecolor{codeframe}{RGB}{210, 218, 226}
+\definecolor{codecomment}{RGB}{92, 99, 112}
+\definecolor{codekeyword}{RGB}{39, 88, 174}
+\definecolor{codestring}{RGB}{198, 72, 24}
+
+\lstdefinestyle{prmlbase}{
+  basicstyle=\ttfamily\small,
+  backgroundcolor=\color{codebg},
+  frame=single,
+  rulecolor=\color{codeframe},
+  frameround=ffff,
+  numbers=left,
+  numberstyle=\scriptsize\color{codecomment},
+  numbersep=8pt,
+  xleftmargin=1.5em,
+  xrightmargin=0.5em,
+  framexleftmargin=1.2em,
+  keywordstyle=\color{codekeyword}\bfseries,
+  commentstyle=\color{codecomment}\itshape,
+  stringstyle=\color{codestring},
+  showstringspaces=false,
+  breaklines=true,
+  tabsize=2,
+  columns=fullflexible
+}
+
+\lstdefinelanguage{bash}{
+  sensitive=true,
+  morekeywords={if,then,else,fi,for,do,done,in,echo,export,cd,ls,pwd,latexmk,xelatex,bibtex},
+  morecomment=[l]{\#},
+  morestring=[b]",
+  morestring=[b]'
+}
+
+\lstdefinestyle{python}{
+  style=prmlbase,
+  language=Python
+}
+
+\lstdefinestyle{bash}{
+  style=prmlbase,
+  language=bash
+}
+
+\lstdefinestyle{text}{
+  style=prmlbase,
+  language={}
+}
+
+\lstset{style=python}

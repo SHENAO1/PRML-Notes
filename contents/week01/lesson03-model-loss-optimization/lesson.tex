@@ -1,0 +1,41 @@
+% Source MD: E:\wanru\PRML_Course\NoteMD\Week1\第3节课 机器学习通用指南：模型+损失函数+优化.md
+\documentclass[main.tex]{subfiles}
+
+\graphicspath{{\subfix{figures/}}}
+
+\begin{document}
+
+\chapter{机器学习通用指南：模型、损失函数与优化}
+\label{chap:w01l03-model-loss-optimization}
+
+\begin{examplebox}
+这一课适合按“训练集与测试集、偏差与优化问题、过拟合与泛化”几个模块组织。
+每个模块都可以独立成节，并补上你自己的课堂理解。
+\end{examplebox}
+
+\section{训练流程骨架}
+\label{sec:w01l03-training-pipeline}
+
+\begin{fact}{三步训练流程}{w01l03-three-steps}
+大多数监督学习任务都可以抽象为模型设计、损失定义与优化求解三步。
+\end{fact}
+
+统一的优化问题可以写为
+\begin{equation}
+  \theta^\star = \argmin_{\theta} L\paren{\theta}.
+  \label{eq:w01l03-optimization}
+\end{equation}
+
+\begin{lstlisting}[style=bash,caption={命令行编译示例},label={lst:w01l03-build}]
+latexmk -xelatex -outdir=build/book main.tex
+latexmk -xelatex -outdir=build/lesson03 contents/week01/lesson03-model-loss-optimization/lesson.tex
+\end{lstlisting}
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.72\linewidth]{contents/week01/lesson03-model-loss-optimization/figures/lesson-figure.jpg}
+  \caption{模型与优化章节图片占位}
+  \label{fig:w01l03-placeholder}
+\end{figure}
+
+\end{document}

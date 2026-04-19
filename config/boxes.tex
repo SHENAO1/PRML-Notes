@@ -1,0 +1,70 @@
+\definecolor{prmlblue}{RGB}{56, 103, 214}
+\definecolor{prmlgreen}{RGB}{45, 156, 94}
+\definecolor{prmlteal}{RGB}{0, 137, 123}
+\definecolor{prmlorange}{RGB}{237, 137, 54}
+\definecolor{prmlred}{RGB}{220, 53, 69}
+\definecolor{prmlgray}{RGB}{108, 117, 125}
+
+\tcbset{
+  prmlbox/.style={
+    enhanced,
+    breakable,
+    boxrule=0.9pt,
+    arc=1.5mm,
+    left=1em,
+    right=1em,
+    top=0.8em,
+    bottom=0.8em,
+    fonttitle=\bfseries,
+    colbacktitle=white,
+    coltitle=black
+  }
+}
+
+\newtcolorbox{keypointbox}[1][]{
+  prmlbox,
+  colback=prmlblue!6!white,
+  colframe=prmlblue!75!black,
+  title={重点},
+  #1
+}
+
+\newtcolorbox{definitionbox}[1][]{
+  prmlbox,
+  colback=prmlgreen!7!white,
+  colframe=prmlgreen!60!black,
+  title={定义卡片},
+  #1
+}
+
+\newtcolorbox{intuitionbox}[1][]{
+  prmlbox,
+  colback=prmlteal!8!white,
+  colframe=prmlteal!70!black,
+  title={直觉理解},
+  #1
+}
+
+\newtcolorbox{examplebox}[1][]{
+  prmlbox,
+  colback=prmlorange!8!white,
+  colframe=prmlorange!80!black,
+  title={例子},
+  #1
+}
+
+\newtcolorbox{warningbox}[1][]{
+  prmlbox,
+  colback=prmlred!6!white,
+  colframe=prmlred!75!black,
+  title={注意},
+  #1
+}
+
+\newtcolorbox{summarybox}[1][]{
+  prmlbox,
+  colback=prmlgray!8!white,
+  colframe=prmlgray!80!black,
+  title={本节小结},
+  #1
+}

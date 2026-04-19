@@ -1,0 +1,39 @@
+% Source MD: E:\wanru\PRML_Course\NoteMD\Week1\第2节课 深度学习基本概念.md
+\documentclass[main.tex]{subfiles}
+
+\graphicspath{{\subfix{figures/}}}
+
+\begin{document}
+
+\chapter{深度学习基本概念}
+\label{chap:w01l02-dl-intro}
+
+\begin{intuitionbox}
+这一课更适合用“概念直觉 + 数学表达 + 模型结构图”的方式整理。
+你后续可以把 sigmoid、神经元、参数矩阵等内容拆成多个小节逐步填充。
+\end{intuitionbox}
+
+\section{非线性模型骨架}
+\label{sec:w01l02-nonlinear-model}
+
+\begin{notation}{参数向量}{w01l02-theta}
+记模型中的全部未知参数为 $\theta$，它可以由若干权重矩阵和偏置向量拼接而成。
+\end{notation}
+
+一个常见的单隐层表达可以写成
+\begin{equation}
+  y = b + \sum_{i=1}^{m} c_i \cdot \sigmoid\paren{b_i + w_i\trans x}.
+  \label{eq:w01l02-single-hidden-layer}
+\end{equation}
+
+后续整理时可以把 \cref{ntn:w01l02-theta,eq:w01l02-single-hidden-layer}
+附近扩展成“模型表达能力”“参数含义”“矩阵化写法”等小节。
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.72\linewidth]{contents/week01/lesson02-dl-intro/figures/lesson-figure.jpg}
+  \caption{深度学习章节图片占位}
+  \label{fig:w01l02-placeholder}
+\end{figure}
+
+\end{document}

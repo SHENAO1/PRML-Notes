@@ -1,0 +1,37 @@
+\documentclass[lang=cn,newtx,10pt,scheme=chinese]{elegantbook}
+
+\input{config/metadata.tex}
+\input{config/packages.tex}
+\input{config/theorem.tex}
+\input{config/boxes.tex}
+\input{config/math.tex}
+\input{config/code.tex}
+
+\begin{document}
+
+\maketitle
+
+\frontmatter
+\tableofcontents
+
+\chapter*{写作说明}
+\addcontentsline{toc}{chapter}{写作说明}
+
+本项目基于 ElegantBook 4.6 搭建，当前仅初始化 Week 1 的课程骨架。
+整本笔记通过 \lstinline|main.tex| 编译，每节课通过各自目录下的
+\lstinline|lesson.tex| 单独编译。
+
+\begin{itemize}
+  \item 公共宏、盒子、定理环境统一放在 \lstinline|config/|。
+  \item 图片统一放在每节课自己的 \lstinline|figures/| 目录中。
+  \item 章节、公式、图片等标签统一采用稳定命名，方便后续增量整理。
+\end{itemize}
+
+\mainmatter
+
+\subfile{contents/week01/lesson01-ml-intro/lesson}
+\subfile{contents/week01/lesson02-dl-intro/lesson}
+\subfile{contents/week01/lesson03-model-loss-optimization/lesson}
+\subfile{contents/week01/lesson04-local-minima-and-saddle-points/lesson}
+
+\end{document}
