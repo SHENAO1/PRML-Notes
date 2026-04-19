@@ -9,81 +9,70 @@
 \label{chap:w01l02-dl-intro}
 
 \begin{intuitionbox}
-深度学习的主线并不神秘：它只是把线性模型替换成更有弹性的非线性函数族，再用同样的损失函数与优化流程把参数学出来。
+深度学习没有突然换一套新游戏规则。它做的事比较像是在原来的线性模型上加更多弹性，让函数弯得起来，然后继续沿用同一套 loss 和优化流程训练参数。
 \end{intuitionbox}
 
-\section{线性模型的局限与 Model Bias}
+\section{线性模型的局限与模型偏差}
 \label{sec:w01l02-model-bias}
 
-在线性模型 $y=b+wx_1$ 中，无论怎么调整 $w$ 和 $b$，$x_1$ 与 $y$ 的关系都只能是一条直线。
-如果真实世界中的关系明显更复杂，线性模型就会因为表达能力不足而产生很大的误差。
+先从上一节的线性模型继续往下看。$y=b+wx_1$ 这种写法当然简单，但它有一个很硬的限制：不管 $w$ 和 $b$ 怎么调，最后都只能画出一条直线。
+如果真实关系本来就弯弯折折，这种模型再怎么训，也很难贴上去。
 
-\begin{definition}{Model Bias}{w01l02-model-bias}
-如果模型本身能够表示的函数集合太小，即使把参数调到最好，仍然无法逼近真实关系，这种由模型表达能力不足导致的误差称为 model bias。
+\begin{definition}{模型偏差（Model Bias）}{w01l02-model-bias}
+如果模型本身能表示的函数集合太小，就算参数已经调到这类模型里最好的状态，仍然逼不近真实关系，这种由表达能力不足带来的误差，就叫模型偏差（model bias）。
 \end{definition}
 
-为了降低这种偏差，必须把模型换成更有弹性的函数。
+所以这节的重点不是“把线性模型调得更努力”，而是先承认它不够，再换一个更有弹性的函数家族。
 
 \section{分段线性曲线与 Sigmoid}
 \label{sec:w01l02-sigmoid}
 
-课程先从一个直觉出发：复杂曲线可以看成许多简单折线段拼起来。
-只要转折点够多，piecewise linear curve 就可以逼近任意连续曲线。
+课程一开始给的直觉其实很朴素：一条复杂曲线，不一定要一次写完，也可以想成很多小段慢慢拼出来。
+只要转折点够多，分段线性曲线（piecewise linear curve）就已经能逼近很多连续函数。
 
-直接手写折线函数并不方便，因此课程引入平滑版的近似元件，也就是 sigmoid：
+问题在于，真的把每一段折线都手写出来会很麻烦。于是课程换了一个更好调的零件，也就是 sigmoid：
 \begin{equation}
   y = c \cdot \frac{1}{1+e^{-(b+wx_1)}} = c \cdot \sigmoid\paren{b+wx_1}.
   \label{eq:w01l02-sigmoid}
 \end{equation}
 
-\cref{eq:w01l02-sigmoid} 的关键在于中间那项 $z=b+wx_1$。当 $z \ll 0$ 时，$e^{-z}$ 很大，因此输出会接近 0；
-当 $z \gg 0$ 时，$e^{-z}$ 很小，因此输出会接近 $c$。这就使得 sigmoid 看起来像一条平滑版的硬折线，
-可以用来逼近课程中提到的 hard sigmoid。
+\cref{eq:w01l02-sigmoid} 真正控制形状的是中间那项 $z=b+wx_1$。
+当 $z$ 很小的时候，输出会压在 0 附近；当 $z$ 很大的时候，输出又会慢慢靠近 $c$。
+也就是说，它不像直线那样一路往前冲，而是会出现一个从低平台过渡到高平台的区段。用它来模仿 hard sigmoid，就会比硬折线顺手很多。
 
-\cref{eq:w01l02-sigmoid} 中各个参数的角色可以直观看成：
-\begin{itemize}
-  \item $w$ 控制斜率；
-  \item $b$ 控制左右平移；
-  \item $c$ 控制输出高度。
-\end{itemize}
+$w$ 决定这段过渡是陡还是缓，$b$ 决定转折大概出现在横轴哪里，$c$ 则把整段输出的高度拉到目标尺度。
+先把这三个角色分清，后面看多个 sigmoid 叠加时就不会乱。
 
 \begin{examplebox}
-若把 sigmoid 的转折区理解为“从低平台过渡到高平台”的位置，那么它大约发生在 $b+wx_1=0$ 附近，也就是 $x_1 \approx -b/w$。
-因此，$b$ 改变的是门槛出现的位置，$w$ 改变的是过渡有多陡，而 $c$ 决定最后平台能抬到多高。
+如果把 sigmoid 的转折区想成“开关开始打开的那一段”，那它大致就落在 $b+wx_1=0$ 附近，也就是 $x_1 \approx -b/w$。
+这个位置会随着 $b$ 左右移动，过渡有多突然则更受 $w$ 影响，至于最后平台能抬多高，就看 $c$。
 \end{examplebox}
 
-多个不同形状的 sigmoid 相加，就可以组合出更复杂的曲线。
-这也是深度学习里常见的基本思路：不用直接写出复杂函数，而是堆叠很多简单但可调的非线性元件，让模型自己学出合适的组合方式。
+单个 sigmoid 当然还是有限，但这类元件的好处就在于可以堆。
+一条不够，就放很多条；一个人弯不过来，就让一群元件一起分工。深度学习里很常见的做法，本质上就是把许多可调的非线性单元拼起来，让模型自己学会怎么组合。
 
 \section{更有弹性的模型}
 \label{sec:w01l02-flexible-model}
 
-把多个 sigmoid 叠起来，就得到课程中的新模型：
+沿着这个思路往前走，把多个 sigmoid 叠起来，模型就会开始有明显的弹性：
 \begin{equation}
   y = b + \sum_i c_i \cdot \sigmoid\paren{b_i + w_i x_1}.
   \label{eq:w01l02-single-feature}
 \end{equation}
 
-\cref{eq:w01l02-single-feature} 可以看成“很多个小 sigmoid 的加权和”：
-\begin{itemize}
-  \item 索引 $i$ 表示第 $i$ 个 sigmoid 单元，也可以把它理解为第 $i$ 个 hidden neuron。
-  \item 每个单元先根据自己的 $w_i,b_i$ 决定转折位置与斜率，再由 $c_i$ 决定它对最终输出的贡献大小。
-\end{itemize}
+\cref{eq:w01l02-single-feature} 里那个索引 $i$，就是在数“第几个 sigmoid 单元”，也可以把它理解成第 $i$ 个隐藏神经元（hidden neuron）。
+每个单元都有自己的一套 $w_i,b_i,c_i$：前两者决定这条小曲线在哪里转、转得有多快，后者则决定它对最终输出贡献多大。
+许多小曲线叠在一起，模型就不再只能画一条直线。
 
-如果输入不只一个特征，而是 $x_1,x_2,\dots$，则模型可写成
+如果输入不只一个特征，而是 $x_1,x_2,\dots$ 一整组，写法就会自然扩成
 \begin{equation}
   y = b + \sum_i c_i \cdot \sigmoid\paren{b_i + \sum_j w_{ij}x_j}.
   \label{eq:w01l02-multi-feature}
 \end{equation}
 
-\cref{eq:w01l02-multi-feature} 比单特征版本多出的关键，是每个 neuron 不再只看一个输入，而是先把所有特征做加权和：
-\begin{itemize}
-  \item 索引 $j$ 表示输入特征编号；
-  \item $w_{ij}$ 表示第 $j$ 个特征对第 $i$ 个 neuron 的影响强度；
-  \item $\sum_j w_{ij}x_j$ 表示第 $i$ 个 neuron 看到的是一组综合后的讯号，而不是单独某一维特征。
-\end{itemize}
-
-因此，多个 sigmoid 叠加并不只是“数量变多”，而是让模型能够在不同输入方向上各自学习不同的非线性反应，表达能力自然比单一直线强得多。
+$j$ 现在用来数输入特征，$w_{ij}$ 则表示“第 $j$ 个特征对第 $i$ 个神经元有多大影响”。
+所以对某个固定的神经元来说，它看到的不是单独某一维输入，而是一整组特征先加权混合后的结果 $\sum_j w_{ij}x_j$。
+也正因为每个神经元都能从不同角度去看同一批输入，多个 sigmoid 叠起来以后，模型的可塑性才会明显上来。
 
 \begin{notation}{参数向量 $\theta$}{w01l02-theta}
 把矩阵 $W$、偏置向量 $b$、输出层权重 $c$ 以及最终常数项全部拉直并接在一起，就得到参数向量 $\theta$。它代表模型里所有需要学习的未知数。
@@ -92,98 +81,98 @@
 \subsection{矩阵表示}
 \label{sec:w01l02-matrix-form}
 
-为了让写法更紧凑，可以把多输入单隐层模型改写成矩阵形式：
+上面的标量写法已经够说明问题，但一旦神经元和特征数量变多，继续一个个写下标会很快失控。
+所以后面通常会把同样的计算压缩成矩阵形式：
 \begin{align}
   r &= Wx + b, \label{eq:w01l02-r} \\
   a &= \sigmoid\paren{r}, \label{eq:w01l02-a} \\
   y &= b_{\mathrm{final}} + c\trans a. \label{eq:w01l02-y}
 \end{align}
 
-\cref{eq:w01l02-r,eq:w01l02-a,eq:w01l02-y} 其实只是把前面的标量写法压缩成向量写法。设输入向量 $x \in \R^d$，
-隐藏层共有 $m$ 个 neuron，则：
+\cref{eq:w01l02-r,eq:w01l02-a,eq:w01l02-y} 没有换掉原本的逻辑，只是把“每个神经元各算一次”压缩成一次向量化运算。
+设输入向量 $x \in \R^d$，隐藏层共有 $m$ 个神经元（neuron），那么：
 \begin{itemize}
-  \item $W \in \R^{m \times d}$：第 $i$ 行收集了第 $i$ 个 neuron 对所有特征的权重；
-  \item $b \in \R^m$：第 $i$ 个分量是第 $i$ 个 neuron 的偏置；
-  \item $r \in \R^m$：第 $i$ 个分量满足 $r_i=\sum_j w_{ij}x_j+b_i$；
+  \item $W \in \R^{m \times d}$：第 $i$ 行收集了第 $i$ 个神经元对所有特征的权重；
+  \item $b \in \R^m$：第 $i$ 个分量对应第 $i$ 个神经元的偏置；
+  \item $r \in \R^m$：其中第 $i$ 个分量就是原来那个 $r_i=\sum_j w_{ij}x_j+b_i$；
   \item $a \in \R^m$：第 $i$ 个分量满足 $a_i=\sigmoid(r_i)$；
-  \item $c \in \R^m$：把所有 hidden neuron 的输出重新加权汇总。
+  \item $c \in \R^m$：拿来把所有隐藏层输出重新加权汇总。
 \end{itemize}
 
-这样一来，前面“每个 neuron 各算一次”的过程，就被压缩成了一次矩阵乘法加一次逐元素激活函数。
-这种写法揭示了神经网络最常见的计算套路：先做仿射变换，再经过 activation function，最后把输出继续送往下一层。
+矩阵写法的好处不只是省篇幅，它也把神经网络最常见的计算顺序露得很清楚：先做仿射变换，再套 activation function，最后把这一层的输出送到下一层。
 
 \begin{examplebox}
-如果输入只有两个特征，而隐藏层有三个 neuron，那么 $x$ 是 $2$ 维向量，$W$ 就是一个 $3 \times 2$ 的矩阵。
-这表示每个 neuron 都会同时读取两个输入特征，但每个 neuron 的读取方式不同，所以它们会学到不同的非线性模式。
+如果输入只有两个特征，隐藏层有三个神经元，那么 $x$ 就是 $2$ 维向量，$W$ 会是一个 $3 \times 2$ 的矩阵。
+这表示三个神经元都在看同一组输入，但它们看的角度不一样，所以学出来的非线性模式也会不同。
 \end{examplebox}
 
-\section{Loss、Optimization、Batch 与 Epoch}
+\section{训练：Loss、优化、Batch 与 Epoch}
 \label{sec:w01l02-training}
 
-模型变复杂以后，训练流程本身并没有改变。仍然是定义损失函数 $L(\theta)$，再去解
+模型开始变复杂以后，训练流程本身其实没换。
+前面多出来的是函数表达能力，不是训练的基本逻辑。照样还是先写 loss，再去解
 \begin{equation}
   \theta^\star = \argmin_\theta L\paren{\theta}.
   \label{eq:w01l02-opt}
 \end{equation}
 
-梯度下降更新规则也依然保留：
+更新规则也还是熟悉的梯度下降：
 \begin{equation}
   \theta^{t+1} = \theta^t - \eta \grad L\paren{\theta^t}.
   \label{eq:w01l02-gd}
 \end{equation}
 
-\cref{eq:w01l02-opt,eq:w01l02-gd} 的写法比第一课更抽象，但本质相同。
-不同之处只在于：第一课的参数是少数几个标量，这里则把 $W,b,c,b_{\mathrm{final}}$ 全部堆叠成一个很长的参数向量 $\theta$。
-因此梯度 $\grad L(\theta^t)$ 也是同样长度的向量，里面的每个分量都告诉我们对应参数该如何调整。
+\cref{eq:w01l02-opt,eq:w01l02-gd} 看起来抽象一些，只是因为参数太多，不能再像第一课那样逐个写 $w,b$。
+这里的 $\theta$ 把 $W,b,c,b_{\mathrm{final}}$ 全部包起来，所以梯度 $\grad L(\theta^t)$ 也会是一条同样长度的向量，里面每个分量都对应着某个参数该往哪里调。
 
 \begin{definitionbox}[title={Batch 与 Epoch}]
 实际训练时，通常不会每次都用完整训练集来算一次梯度，而是把数据切成许多 batch。
 看完一个 batch 并更新一次参数，称为一次 update；把所有 batch 全看完一遍，称为一个 epoch。
 \end{definitionbox}
 
-从优化角度看，用 batch 训练等于每次只用部分资料去近似完整 loss 的下降方向。
-它牺牲了单次梯度的精确性，但换来了更低的计算成本，也让参数能够更频繁地更新。
+换成 batch 的角度去看，就是每次只拿一部分资料来估计完整 loss 的下降方向。
+单次梯度没那么精确，但计算便宜得多，参数也能更频繁更新，这就是为什么实际训练几乎都会这么做。
 
 \section{Activation Function 与 Deep Learning}
 \label{sec:w01l02-activation}
 
-除了 sigmoid，课程还介绍了另一个常用激活函数 ReLU：
+如果说 sigmoid 像一种比较平滑的非线性元件，那 ReLU 就是更直接的另一种版本：
 \begin{equation}
   y = c \cdot \max\paren{0, b+wx_1}.
   \label{eq:w01l02-relu}
 \end{equation}
 
-与 sigmoid 相比，ReLU 的结构更简单：当 $b+wx_1<0$ 时输出直接为 0；当 $b+wx_1>0$ 时输出就是一条直线。
-因此 sigmoid 像“平滑的开关”，ReLU 则更像“截断后的折线”。两者都能提供非线性，但方式不同。
+两者都能把“纯直线”这件事打破，不过手法不一样。
+sigmoid 是平滑地从低平台过渡到高平台；ReLU 更干脆，负的部分直接砍成 0，正的部分保留成直线。
+所以前者像平滑开关，后者更像硬一点的折线。
 
-Sigmoid 和 ReLU 都属于 activation function。把一层的输出继续送入下一层，
-就得到多层结构。课程中的命名关系可以整理为：
+sigmoid 和 ReLU 都属于激活函数（activation function）。
+一层算完再接一层，模型就会往深的方向长。课程里的命名关系可以顺手整理成：
 \begin{itemize}
-  \item 一个 sigmoid 或 ReLU 单元可视为一个 neuron；
-  \item 一排 neuron 构成一个 hidden layer；
-  \item hidden layer 很多时，整套方法就称为 deep learning。
+  \item 一个 sigmoid 或 ReLU 单元可以视为一个神经元（neuron）；
+  \item 一排神经元组成一个隐藏层（hidden layer）；
+  \item 隐藏层堆得比较深时，这整套方法就会被叫做深度学习（deep learning）。
 \end{itemize}
 
 \begin{examplebox}
-课程实验显示，增加神经元数量与隐藏层深度，通常能明显降低训练误差；
-但这种能力如果不加控制，也会引出后面的过拟合问题。
+课程实验里可以很直接地看到：神经元数量和层数一上去，训练误差常常就会往下掉。
+不过模型一旦太会拟合，后面也就更容易接到过拟合的问题。
 \end{examplebox}
 
 \section{过拟合现象}
 \label{sec:w01l02-overfitting}
 
-课程用 YouTube 观看人数预测举例说明：更深的网络在训练集上的 loss 可能更低，
-但在 2021 年这种没看过的测试资料上反而更差。
+模型变强当然是好事，但也不是没有代价。
+课程还是用 YouTube 观看人数预测举例：更深的网络在训练集上可能压出更低的 loss，可一到 2021 年这种没见过的资料上，表现反而变差。
 
-\begin{definition}{Overfitting}{w01l02-overfitting}
-如果模型在训练资料上表现持续变好，但在未见过的测试资料上表现变差，这种现象称为过拟合。
+\begin{definition}{过拟合（Overfitting）}{w01l02-overfitting}
+如果模型在训练资料上越学越好，但换到没见过的测试资料时反而变差，这种现象就叫过拟合（overfitting）。
 \end{definition}
 
-因此，模型选择的标准从来不是单看训练误差，而是要看它在未知资料上的泛化能力。
+所以选模型时，不能只盯着训练误差看。真正该看的，是它遇到未知资料时还有没有泛化能力。
 
 \begin{summarybox}
-本节的逻辑可以压缩成一句话：为了降低线性模型的 bias，我们引入更有弹性的非线性模型，
-再通过 activation function、隐藏层和矩阵表示，把这种想法扩展成神经网络与深度学习。
+这节的主线可以顺成一句话：线性模型不够弯，所以我们引入非线性元件；元件一多，模型就会变成神经网络；层数继续往上叠，深度学习也就自然出现了。
 \end{summarybox}
 
 \end{document}
